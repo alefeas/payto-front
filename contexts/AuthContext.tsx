@@ -5,8 +5,8 @@ import { User, AuthState } from '@/types/auth';
 import { authService } from '@/services/authService';
 
 interface AuthContextType extends AuthState {
-    login: (email: string, password: string) => Promise<void>;
-    register: (name: string, email: string, password: string) => Promise<void>;
+    login: (email: string, password: string) => Promise<User>;
+    register: (name: string, email: string, password: string) => Promise<User>;
     logout: () => void;
 }
 
@@ -33,7 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     }, []);
 
-    const login = async (email: string, password: string) => {
+    const login = async (email: string, password: string): Promise<User> => {
         try {
             const user = await authService.login({ email, password });
             localStorage.setItem('user', JSON.stringify(user));
@@ -42,12 +42,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 isAuthenticated: true,
                 isLoading: false,
             });
+            return user;
         } catch (error) {
-            throw new Error('Invalid credentials');
+            console.error('Login failed:', error);
+            throw error;
         }
     };
 
-    const register = async (name: string, email: string, password: string) => {
+    const register = async (name: string, email: string, password: string): Promise<User> => {
         try {
             const user = await authService.register({ name, email, password, confirmPassword: password });
             localStorage.setItem('user', JSON.stringify(user));
@@ -56,6 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 isAuthenticated: true,
                 isLoading: false,
             });
+            return user;
         } catch (error) {
             throw new Error('Registration failed');
         }
@@ -68,6 +71,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             isAuthenticated: false,
             isLoading: false,
         });
+        // Force page reload to trigger middleware
+        window.location.href = '/login';
     };
 
     return (

@@ -4,21 +4,36 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 class AuthService {
     async login({ email, password }: LoginCredentials): Promise<User> {
-        // Simulate API call
-        await delay(500);
+        console.log('AuthService: Attempting login...', { email });
+        
+        try {
+            // Simulate API call with delay for development
+            await delay(500);
 
-        // For development, accept any valid-looking email/password
-        if (email && password.length >= 6) {
+            // Mock validation: accept any valid email with password >= 6 chars
+            if (!email || !email.includes('@')) {
+                console.error('AuthService: Invalid email format');
+                throw new Error('Invalid email format');
+            }
+
+            if (!password || password.length < 6) {
+                console.error('AuthService: Password too short');
+                throw new Error('Password must be at least 6 characters');
+            }
+
             const user: User = {
                 id: '1',
                 email,
                 name: email.split('@')[0],
                 role: 'user',
             };
-            return user;
-        }
 
-        throw new Error('Invalid credentials');
+            console.log('AuthService: Login successful', { user });
+            return user;
+        } catch (error) {
+            console.error('AuthService: Login failed', error);
+            throw error;
+        }
     }
 
     async register({ name, email, password }: RegisterCredentials): Promise<User> {
