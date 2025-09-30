@@ -42,9 +42,9 @@ export function CompanyMenu({ company }: CompanyMenuProps) {
             href: `/dashboard/companies/${company.id}/statistics`
         },
         {
-            label: 'Proveedores',
+            label: 'Red Empresarial',
             icon: Users,
-            href: `/dashboard/companies/${company.id}/providers`
+            href: `/dashboard/companies/${company.id}/business-network`
         },
         {
             label: 'Proyección de Pagos',

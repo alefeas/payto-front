@@ -1,11 +1,12 @@
-'use client';
+'use client'
+
+import { InvoiceUploadForm } from "@/components/invoices/InvoiceUploadForm"
 
 export default function UploadInvoicePage({ params }: { params: { companyId: string } }) {
-    return (
-        <div>
-            <h1 className="text-2xl font-bold mb-4">Subir Factura</h1>
-            {/* Aquí irá el formulario de subida de facturas */}
-            <p className="text-muted-foreground">Formulario de subida de facturas en desarrollo...</p>
-        </div>
-    );
+  return (
+    <div className="container mx-auto py-8">
+      <h1 className="text-2xl font-bold mb-8">Subir Factura</h1>
+      <InvoiceUploadForm />
+    </div>
+  )
 }

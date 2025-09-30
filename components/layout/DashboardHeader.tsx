@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell } from 'lucide-react';
+import { NotificationMenu } from '@/components/notifications/NotificationMenu';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import {
@@ -30,10 +30,7 @@ export function DashboardHeader() {
 
                 <div className="flex items-center gap-4">
                     {/* Notifications */}
-                    <Button variant="ghost" size="icon" className="relative">
-                        <Bell className="h-5 w-5" />
-                        <span className="absolute top-0 right-0 h-2 w-2 bg-red-600 rounded-full" />
-                    </Button>
+                    <NotificationMenu />
 
                     {/* User Profile */}
                     <DropdownMenu>
