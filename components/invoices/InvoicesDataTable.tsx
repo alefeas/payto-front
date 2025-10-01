@@ -41,6 +41,7 @@ import {
 import { ChevronDown } from "lucide-react"
 
 import { InvoiceDetails } from "./InvoiceDetails"
+import { TransferInvoiceDialog } from "./TransferInvoiceDialog"
 import { Invoice } from "@/types/invoice"
 
 interface DataTableProps<TData, TValue> {
@@ -48,6 +49,7 @@ interface DataTableProps<TData, TValue> {
   data: TData[]
   meta?: {
     showDetails: (invoice: Invoice) => void
+    showShareDialog?: (invoice: Invoice) => void
   }
 }
 
@@ -61,6 +63,7 @@ export function InvoicesDataTable<TData extends Invoice, TValue>({
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
   const [selectedInvoice, setSelectedInvoice] = React.useState<TData | null>(null)
+  const [invoiceToShare, setInvoiceToShare] = React.useState<TData | null>(null)
 
   const table = useReactTable({
     data,
@@ -86,6 +89,13 @@ export function InvoicesDataTable<TData extends Invoice, TValue>({
           meta.showDetails(invoice)
         } else {
           setSelectedInvoice(invoice)
+        }
+      },
+      showShareDialog: (invoice: TData) => {
+        if (meta?.showShareDialog) {
+          meta.showShareDialog(invoice)
+        } else {
+          setInvoiceToShare(invoice)
         }
       }
     }
@@ -135,8 +145,8 @@ export function InvoicesDataTable<TData extends Invoice, TValue>({
                     key={column.id}
                     className="capitalize"
                     checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
+                    onCheckedChange={(value: boolean) =>
+                      column.toggleVisibility(value)
                     }
                   >
                     {column.id}
@@ -215,12 +225,35 @@ export function InvoicesDataTable<TData extends Invoice, TValue>({
       </div>
       <Dialog 
         open={selectedInvoice !== null} 
-        onOpenChange={(open) => !open && setSelectedInvoice(null)}
+        onOpenChange={(open: boolean) => !open && setSelectedInvoice(null)}
       >
         <DialogContent className="max-w-4xl">
           {selectedInvoice && <InvoiceDetails invoice={selectedInvoice} />}
         </DialogContent>
       </Dialog>
+
+      {invoiceToShare && (
+        <TransferInvoiceDialog
+          invoice={invoiceToShare}
+          open={true}
+          onOpenChange={(open: boolean) => !open && setInvoiceToShare(null)}
+          onTransfer={async (recipientId: string) => {
+            try {
+              // TODO: Implementar cuando esté el backend
+              await fetch('/api/invoices/share', {
+                method: 'POST',
+                body: JSON.stringify({
+                  invoiceId: invoiceToShare.id,
+                recipientId
+                })
+              });
+              setInvoiceToShare(null);
+            } catch (error) {
+              console.error('Error sharing invoice:', error);
+            }
+          }}
+        />
+      )}
     </div>
   )
 }

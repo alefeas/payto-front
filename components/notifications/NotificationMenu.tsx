@@ -15,14 +15,33 @@ import type { Notification, NotificationType } from '@/types/notifications';
 const mockNotifications: Notification[] = [
   {
     id: '1',
-    title: 'Nueva factura recibida',
-    message: 'Has recibido una nueva factura para revisión.',
+    title: 'Nueva factura compartida',
+    message: 'Empresa A te ha compartido una factura para revisión.',
     type: 'info',
     createdAt: new Date(),
     read: false,
+    link: '/dashboard/invoices/shared',
   },
   {
     id: '2',
+    title: 'Nueva solicitud de conexión',
+    message: 'Empresa B quiere conectarse contigo.',
+    type: 'info',
+    createdAt: new Date(),
+    read: false,
+    link: '/dashboard/business-network',
+  },
+  {
+    id: '3',
+    title: 'Factura aceptada',
+    message: 'Empresa C ha aceptado tu factura.',
+    type: 'success',
+    createdAt: new Date(),
+    read: false,
+    link: '/dashboard/invoices/shared',
+  },
+  {
+    id: '4',
     title: 'Pago pendiente',
     message: 'Tienes un pago que vence pronto.',
     type: 'warning',
@@ -81,7 +100,13 @@ export function NotificationMenu() {
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className="flex items-start gap-3 p-3 hover:bg-accent rounded-lg group relative"
+                  className="flex items-start gap-3 p-3 hover:bg-accent rounded-lg group relative cursor-pointer"
+                  onClick={() => {
+                    if (notification.link) {
+                      // TODO: Implementar navegación
+                      console.log('Navigate to:', notification.link);
+                    }
+                  }}
                 >
                   <NotificationIcon type={notification.type} />
                   <div className="flex-1">
@@ -97,7 +122,10 @@ export function NotificationMenu() {
                     variant="ghost"
                     size="icon"
                     className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => removeNotification(notification.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeNotification(notification.id);
+                    }}
                   >
                     <X className="h-4 w-4" />
                   </Button>

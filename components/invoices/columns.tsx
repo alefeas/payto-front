@@ -3,7 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Invoice } from "@/types/invoice"
 import { Button } from "@/components/ui/button"
-import { Check, Copy, Download, Eye, File, MoreHorizontal } from "lucide-react"
+import { Check, Copy, Download, Eye, File, Share2, MoreHorizontal } from "lucide-react"
 import { format } from "date-fns"
 import {
   DropdownMenu,
@@ -132,6 +132,14 @@ export const columns: ColumnDef<Invoice>[] = [
               <Download className="mr-2 h-4 w-4" />
               Descargar PDF
             </DropdownMenuItem>
+            {invoice.status === "approved" && (
+              <DropdownMenuItem
+                onClick={() => table.options.meta?.showShareDialog?.(invoice)}
+              >
+                <Share2 className="mr-2 h-4 w-4" />
+                Transferir Factura
+              </DropdownMenuItem>
+            )}
             {invoice.status === "pending_approval" && (
               <DropdownMenuItem
                 onClick={() => {

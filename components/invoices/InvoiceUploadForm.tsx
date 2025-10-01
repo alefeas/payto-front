@@ -4,6 +4,8 @@ import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
+import { Invoice } from "@/types/invoice"
+import { TransferInvoiceDialog } from "./TransferInvoiceDialog"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import {
@@ -30,6 +32,7 @@ import { format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
 import { InvoiceItems } from "@/components/invoices/InvoiceItems"
 import { InvoicePerceptions } from "@/components/invoices/InvoicePerceptions"
+import { mockBusinessNetwork } from "@/mocks/business-network"
 
 const formSchema = z.object({
   invoiceType: z.enum(['A', 'B', 'C'] as const),
@@ -55,9 +58,15 @@ const formSchema = z.object({
   })),
 })
 
-export function InvoiceUploadForm() {
+interface InvoiceUploadFormProps {
+  companyId: string;
+}
+
+export function InvoiceUploadForm({ companyId }: InvoiceUploadFormProps) {
   const [subtotal, setSubtotal] = useState(0)
   const [total, setTotal] = useState(0)
+  const [showTransferDialog, setShowTransferDialog] = useState(false)
+  const [currentInvoice, setCurrentInvoice] = useState<Invoice | null>(null)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -300,9 +309,66 @@ export function InvoiceUploadForm() {
           </div>
         </div>
 
-        <div className="flex justify-end">
-          <Button type="submit">Guardar Factura</Button>
+        <div className="flex justify-end gap-4">
+          <Button type="submit" variant="outline">Solo Guardar</Button>
+          <Button type="submit" onClick={(e) => {
+            e.preventDefault();
+            // Primero abrimos el diálogo de transferencia
+            setShowTransferDialog(true);
+          }}>
+            Guardar y Transferir
+          </Button>
         </div>
+
+        <TransferInvoiceDialog
+          invoice={currentInvoice}
+          open={showTransferDialog}
+          onOpenChange={setShowTransferDialog}
+          onTransfer={async (recipientId: string) => {
+            try {
+              const formData = form.getValues();
+              // Primero guardamos la factura
+              const response = await new Promise<Invoice>((resolve) => {
+                console.log('Saving invoice for company:', companyId);
+                setTimeout(() => {
+                  resolve({
+                    id: '123',
+                    invoiceType: formData.invoiceType,
+                    invoiceNumber: formData.invoiceNumber,
+                    issueDate: formData.issueDate.toISOString(),
+                    dueDate: formData.dueDate.toISOString(),
+                    client: formData.client,
+                    provider: {
+                      cuit: '30-12345678-9',
+                      name: 'Mi Empresa'
+                    },
+                    items: formData.items,
+                    iva: formData.iva,
+                    perceptions: formData.perceptions,
+                    subtotal,
+                    total,
+                    status: 'pending_approval'
+                  });
+                }, 1000);
+              });
+
+              // Luego simulamos la transferencia
+              await new Promise(resolve => {
+                const selectedCompany = mockBusinessNetwork.find(c => c.id === recipientId);
+                console.log(`Transferring invoice ${response.invoiceNumber} to ${selectedCompany?.name}`);
+                setTimeout(resolve, 1000);
+              });
+              
+              setShowTransferDialog(false);
+              // Reiniciamos el formulario después de una transferencia exitosa
+              form.reset();
+              setSubtotal(0);
+              setTotal(0);
+            } catch (error) {
+              console.error('Error saving/transferring invoice:', error);
+            }
+          }}
+        />
       </form>
     </Form>
   )

@@ -32,8 +32,9 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Badge } from '@/components/ui/badge';
+import { CompanyCard } from './CompanyCard';
 import { UserPlus, Users } from 'lucide-react';
+import { mockBusinessNetwork } from '@/mocks/business-network'
 
 const requestFormSchema = z.object({
   companyTaxId: z.string().min(11, "El CUIT debe tener 11 dígitos"),
@@ -64,34 +65,16 @@ const relationTypes: RelationType[] = [
   }
 ];
 
-const mockRelations: BusinessRelation[] = [
-  {
-    id: '1',
-    companyId: '1',
-    relatedCompanyId: '2',
-    type: 'provider',
-    status: 'active',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  }
-];
-
-const mockRelatedCompanies: Company[] = [
-  {
-    id: '2',
-    name: 'Empresa Proveedora S.A.',
-    businessName: 'Empresa Proveedora S.A.',
-    taxId: '30-98765432-1',
-    bankAccount: {
-      accountNumber: '987654321',
-      bankName: 'Banco Proveedor',
-      accountType: 'checking',
-    },
-    joinCode: 'XYZ789',
-    createdBy: 'user2',
-    members: ['user2'],
-  }
-];
+// Convertir los datos de mockBusinessNetwork al formato de BusinessRelation
+const mockRelations: BusinessRelation[] = mockBusinessNetwork.map(company => ({
+  id: company.id,
+  companyId: '1', // ID de nuestra empresa
+  relatedCompanyId: company.id,
+  type: 'provider', // Por defecto, se puede ajustar según la lógica de negocio
+  status: company.status === 'connected' ? 'active' : 'pending',
+  createdAt: company.connectionDate,
+  updatedAt: company.lastTransaction || company.connectionDate
+}));
 
 export function BusinessNetwork() {
   const [showRequestDialog, setShowRequestDialog] = useState(false);
@@ -109,19 +92,10 @@ export function BusinessNetwork() {
   };
 
   const getRelatedCompany = (relatedCompanyId: string) => {
-    return mockRelatedCompanies.find(company => company.id === relatedCompanyId);
+    return mockBusinessNetwork.find(company => company.id === relatedCompanyId);
   };
 
-  const getStatusBadge = (status: BusinessRelation['status']) => {
-    switch (status) {
-      case 'active':
-        return <Badge variant="secondary">Activa</Badge>;
-      case 'pending':
-        return <Badge variant="outline">Pendiente</Badge>;
-      case 'rejected':
-        return <Badge variant="destructive">Rechazada</Badge>;
-    }
-  };
+
 
   return (
     <div className="space-y-6">
@@ -202,21 +176,12 @@ export function BusinessNetwork() {
               if (!relatedCompany) return null;
 
               return (
-                <Card key={relation.id} className="p-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="text-lg font-semibold">{relatedCompany.name}</h3>
-                      <p className="text-sm text-muted-foreground">{relatedCompany.taxId}</p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <Users className="h-4 w-4" />
-                        <span className="text-sm">
-                          {relationTypes.find(t => t.value === relation.type)?.label}
-                        </span>
-                      </div>
-                    </div>
-                    {getStatusBadge(relation.status)}
-                  </div>
-                </Card>
+                <CompanyCard
+                  key={relation.id}
+                  company={relatedCompany}
+                  relation={relation}
+                  relationTypes={relationTypes}
+                />
               );
             })}
         </TabsContent>
@@ -228,24 +193,13 @@ export function BusinessNetwork() {
               if (!relatedCompany) return null;
 
               return (
-                <Card key={relation.id} className="p-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="text-lg font-semibold">{relatedCompany.name}</h3>
-                      <p className="text-sm text-muted-foreground">{relatedCompany.taxId}</p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <Users className="h-4 w-4" />
-                        <span className="text-sm">
-                          {relationTypes.find(t => t.value === relation.type)?.label}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline">Rechazar</Button>
-                      <Button size="sm">Aceptar</Button>
-                    </div>
-                  </div>
-                </Card>
+                <CompanyCard
+                  key={relation.id}
+                  company={relatedCompany}
+                  relation={relation}
+                  relationTypes={relationTypes}
+                  isPending
+                />
               );
             })}
         </TabsContent>

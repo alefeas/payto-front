@@ -6,7 +6,7 @@ export default function UploadInvoicePage({ params }: { params: { companyId: str
   return (
     <div className="container mx-auto py-8">
       <h1 className="text-2xl font-bold mb-8">Subir Factura</h1>
-      <InvoiceUploadForm />
+      <InvoiceUploadForm companyId={params.companyId} />
     </div>
   )
 }

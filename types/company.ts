@@ -47,6 +47,7 @@ export interface Company {
     createdBy: string;
     members: string[];
     businessRelations?: BusinessRelation[];
+    businessName?: string;
 }
 
 export interface CreateCompanyData {

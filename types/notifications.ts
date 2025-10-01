@@ -7,6 +7,11 @@ export interface Notification {
     type: NotificationType;
     createdAt: Date;
     read: boolean;
+    link?: string; // URL opcional para navegar al hacer clic
+    actionData?: {
+        type: 'connection_request' | 'shared_invoice';
+        id: string;
+    };
 }
 
 export interface NotificationGroup {
